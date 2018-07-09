@@ -13,7 +13,6 @@ HDataFile::HDataFile()
     m_wRec = 1;//偏移？？
     m_szFile = "";//文件名称
     m_nFileType = 0;
-
     m_hHeader.btMagic[0] = 'H';//文件头
     m_hHeader.btMagic[1] = 'W';
     m_hHeader.btVersion[0] = 0x01;

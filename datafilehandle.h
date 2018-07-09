@@ -1,7 +1,6 @@
 ﻿#ifndef DATAFILEHANDLE_H
 #define DATAFILEHANDLE_H
 #include "publicdata.h"
-//#include "publicfun.h"
 #include "data.h"
 #include "datafile.h"
 #include <QString>

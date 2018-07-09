@@ -2,7 +2,7 @@ TEMPLATE = lib
 CONFIG += qt warn_on thread exceptions all
 TARGET = datafile
 DEFINES += DATAFILE_DLL
-DESTDIR = $$(WF_ROOT)\lib\debug
+DESTDIR = ..\lib
 
 debug {
    CONFIG -= release
