@@ -68,11 +68,11 @@ bool HDataFileList::createDataFile(int nFileType,QString szFile)
     DATAFILEHEADER header;
     pFile->getDataFileHeader(&header);
     int nSize = getFileTypeSize(nFileType);
-    if(header.wTotal == 0 || header.btType != nFileType || header.wRecLength != nSize)
+    if(header.wTotal == 0 || header.btType != nFileType || header.wTypeLen != nSize)
     {
         header.wTotal = 0;
         header.btType = nFileType;
-        header.wRecLength = nSize;
+        header.wTypeLen = nSize;
     }
     pFile->setDataFileHeader(&header);
     m_pDataFileList.append(pFile);//需要测试

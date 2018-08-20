@@ -1,47 +1,36 @@
 ﻿#include "datafilehandle.h"
 #include "publicdata.h"
+#include "hruleeditapi.h"
+#include "hformulapi.h"
 #include <QCoreApplication>
 #include <QDir>
 
-QString strDataFilePath[DFPATH_LAST + 1];
-QString szExecutePath;
-QString szSystemPath;
-#define MAX_PATH 1024
-//ini文件中存放路径位置的KEY
-QString strSettingPath[DFPATH_LAST + 1] =
+typedef struct _tagDefaultPath
 {
-    "DATAFILEPATH" ,
-    "GRAPHPATH",
-    "SYMBOLPATH",
-    "BITMAPPATH"
-    "MACROPATH"
-    "MEDIAPATH",
-    "OPERATETICKETPATH",
-    "WORKNOTEPATH",
-    "EVENTPATH",
-    "REPORTPATH",
-    "SIGNPADPATH",
-    "FILPATH",
-    "INIPATH",  //ini文件
-};
+    ushort nFileType;
+    char*  szPath;
+}DEFAULTPATH;
 
+QString strDataFilePath[DFPATH_LAST + 1];
+#define MAX_PATH 1024
 //如果ini中没有对应的Key则取默认
-QString strDefaultPath[DFPATH_LAST + 1] =
+DEFAULTPATH DefaultPath[] =
 {
-    "DATA",
-    "GRAPH",
-    "SYMBOL",
-    "BITMAP",
-    "MACRO",
-    "MEDIA",
-    "OPNOTE",
-    "WORKNOTE",
-    "EVENT",
-    "REPORT",
-    "SIGNPAD",
-    "FIL",
-    "INI",
-    "PLUGIN"
+    DFPATH_DATA,"data",
+    DFPATH_GRAPH,"graph",
+    DFPATH_ICON,"icon",
+    DFPATH_BITMAP,"bitmap",
+    DFPATH_MACRO,"macro",
+    DFPATH_MEDIA,"media",
+    DFPATH_OPSHEET,"opsheet",
+    DFPATH_WORKNOTE,"worknote",
+    DFPATH_EVENT,"event",
+    DFPATH_REPORT,"report",
+    DFPATH_SIGNPAD,"signpad",
+    DFPATH_FIL,"fil",
+    DFPATH_INI,"ini",
+    DFPATH_PLUGIN,"plugin",
+    DFPATH_BIN,"bin"
 };
 
 int nFiles[ FILE_TYPE_LAST + 1 ];
@@ -50,7 +39,9 @@ int getFileTypeSize(int nFileType)
 {
     int nSize = (int)-1;
     if(nFileType == FILE_TYPE_STATION)
+    {
         nSize = sizeof(STATION);
+    }
     else if(nFileType == FILE_TYPE_DIGITAL)
     {
         nSize = sizeof(DIGITAL);
@@ -79,17 +70,37 @@ int getFileTypeSize(int nFileType)
     {
         nSize = sizeof(WFLOCKTYPE);
     }
-    else if(nFileType == FILE_TYPE_GLOSSARY)
+    else if(nFileType == FILE_TYPE_OPTERM)
     {
-        nSize = sizeof(GLOSSARY);
+        nSize = sizeof(OPTERM);
     }
-    else if(nFileType == FILE_TYPE_GLOSSARYGROUP)
+    else if(nFileType == FILE_TYPE_OPTERMGROUP)
     {
-        nSize = sizeof(GLOSSARYGROUP);
+        nSize = sizeof(OPTERMGROUP);
     }
     else if(nFileType == FILE_TYPE_DIGITALLOCKNO)
     {
         nSize = sizeof(DIGITALLOCKNO);
+    }
+    else if(nFileType == FILE_TYPE_RULE)
+    {
+        nSize = sizeof(RULE);
+    }
+    else if(nFileType == FILE_TYPE_FORMULA)
+    {
+        nSize = sizeof(FORMULA);
+    }
+    else if(nFileType == FILE_TYPE_ITEM)
+    {
+        nSize = sizeof(ITEM);
+    }
+    else if(nFileType == FILE_TYPE_OPSHEETINFO)
+    {
+        nSize = sizeof(OPSHEETINFO);
+    }
+    else if(nFileType == FILE_TYPE_OPSHEETHEAD)
+    {
+        nSize = sizeof(OPSHEETSTEP);
     }
     return nSize;
 }
@@ -101,7 +112,6 @@ HDataFileHandle* HDataFileHandle::Instance()
     if(!m_pInstance)
     {
         m_pInstance = new HDataFileHandle;
-        m_pInstance->setDataFilePath();
     }
 
     return m_pInstance;
@@ -111,54 +121,13 @@ HDataFileHandle::HDataFileHandle()
 {
 }
 
-
-//这个函数需要在任何模块启动之前调用，所以放在List的构造函数里面
-void HDataFileHandle::setDataFilePath()
-{
-    //获取文件对应文件夹的路径 d:/wf/bin
-    QString strDirPath = QCoreApplication::applicationDirPath();
-    QString strAppPath = strDirPath.left(strDirPath.lastIndexOf("/"));
-    char szTemp[MAX_PATH]="";
-    for(int i = 0; i <= DFPATH_LAST;i++)
-    {
-        //先获取存在的路径
-        QString strTemp;
-        if(0 == qstrlen(szTemp))
-        {
-            strTemp = strAppPath + "/" + strDefaultPath[i];
-        }
-        else
-        {
-            strTemp = szTemp;
-        }
-        strDataFilePath[i] = strTemp;
-    }
-}
-
 void  HDataFileHandle::getDataFilePath(int nPath,char* filename)
 {
-    if(DFPATH_EXECUTE == nPath)//bin路径
+    qstrcpy(filename,"");
+    if(0 <= nPath && nPath <= DFPATH_LAST)//各种文件夹路径
     {
-        QString tmp = szExecutePath;
-        QByteArray text = tmp.toLocal8Bit();
-        char *data = new char[text.size() + 1];
-        qstrcpy(filename,data);
-        delete [] data;
+        qstrcpy(filename,DefaultPath[nPath].szPath);
     }
-    else if(DFPATH_SYSTEM == nPath)//系统路径
-    {
-        QString tmp = szSystemPath;
-        QByteArray text = tmp.toLocal8Bit();
-        char *data = new char[text.size() + 1];
-        qstrcpy(filename,data);
-        delete [] data;
-    }
-    else if(0 <= nPath && nPath <= DFPATH_LAST)//各种文件夹路径
-    {
-        qstrcpy(filename,strDataFilePath[nPath].toLocal8Bit().data());
-        //QString strname = QString(filename);
-    }
-   // return true;
 }
 
 bool HDataFileHandle::getDataFileName(int nFileType,char* pBuffer)
@@ -193,26 +162,26 @@ bool HDataFileHandle::getDataFileName(int nFileType,char* pBuffer)
         case FILE_TYPE_LOCKTYPE:
                 strFile = "wflocktype.dat";
                 break;
-        case FILE_TYPE_OPERATERULE:
-                strFile = "wfOperteRule.dat";
+        case FILE_TYPE_RULE:
+                strFile = "wfrule.dat";
                 break;
-        case FILE_TYPE_OPERATETICKETHEAD:
-                strFile = "wfOperateTicketHead.dat";
+        case FILE_TYPE_OPSHEETHEAD:
+                strFile = "wfopsheethead.dat";
                 break;
         case FILE_TYPE_RELAY:
-                strFile = "wfRelay.dat";
+                strFile = "wfrelay.dat";
                 break;
-        case FILE_TYPE_GLOSSARY:
-                strFile = "wfglossary.dat";
+        case FILE_TYPE_OPTERM:
+                strFile = "wfopterm.dat";
                 break;
-        case FILE_TYPE_GLOSSARYGROUP:
+        case FILE_TYPE_OPTERMGROUP:
                 strFile = "wfglossarygroup.dat";
                 break;
         case FILE_TYPE_EVENTTICKETDATA:
                 strFile = "wfEventTicketData.dat";
                 break;
-        case FILE_TYPE_REPORTHEAD:
-                strFile = "wfReportHead.dat";
+        case FILE_TYPE_OPSHEETINFO:
+                strFile = "wfsheet.dat";
                 break;
         case FILE_TYPE_WORKNOTEHEAD:
                 strFile = "wfWorkNoteHead.dat";
@@ -487,7 +456,7 @@ bool loadDataFileHeader( int nFileType, DATAFILEHEADER* pHeader )
         return false;
      HDataFileHandle *pInstance = HDataFileHandle::Instance();
    // DATAFILEHEADER Header;
-   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wRecLength)
+   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wTypeLen)
    //     initDbRecord();
      char szFile[MAX_PATH];
      if(!pInstance->getDataFileName(nFileType,szFile))
@@ -501,7 +470,7 @@ bool saveDataFileHeader( int nFileType, DATAFILEHEADER* pHeader )
         return false;
      HDataFileHandle *pInstance = HDataFileHandle::Instance();
    // DATAFILEHEADER Header;
-   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wRecLength)
+   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wTypeLen)
    //     initDbRecord();
      char szFile[MAX_PATH];
      if(!pInstance->getDataFileName(nFileType,szFile))
@@ -515,7 +484,7 @@ bool loadDBRecord( int nFileType, quint16 wRec, void* pRecord )
         return false;
      HDataFileHandle *pInstance = HDataFileHandle::Instance();
    // DATAFILEHEADER Header;
-   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wRecLength)
+   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wTypeLen)
    //     initDbRecord();
      char szFile[MAX_PATH];
      if(!pInstance->getDataFileName(nFileType,szFile))

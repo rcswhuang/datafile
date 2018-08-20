@@ -19,7 +19,7 @@ HDataFile::HDataFile()
     m_hHeader.btVersion[1] = 0x00;
     m_hHeader.btType = 0;
     m_hHeader.wTotal = 0;
-    m_hHeader.wRecLength = 0;
+    m_hHeader.wTypeLen = 0;
     m_hHeader.wReserved = 0;
     m_hHeader.wReserved1 = 0;
 }
@@ -37,7 +37,7 @@ HDataFile::HDataFile(QString szFile)
     m_hHeader.btVersion[1] = 0x00;
     m_hHeader.btType = 0;
     m_hHeader.wTotal = 0;
-    m_hHeader.wRecLength = 0;
+    m_hHeader.wTypeLen = 0;
     m_hHeader.wReserved = 0;
     m_hHeader.wReserved1 = 0;
     m_szFile = szFile;
@@ -75,7 +75,7 @@ bool HDataFile::operator ==(const HDataFile& other )const
         bResult = false;
     if(m_hHeader.btMagic[0] != other.m_hHeader.btMagic[0] || m_hHeader.btMagic[1] != other.m_hHeader.btMagic[1] ||
     m_hHeader.btVersion[0] != other.m_hHeader.btVersion[0] || m_hHeader.btVersion[1] != other.m_hHeader.btVersion[0] ||
-    m_hHeader.btType != other.m_hHeader.btType || m_hHeader.wTotal != other.m_hHeader.wTotal || m_hHeader.wRecLength != other.m_hHeader.wRecLength)
+    m_hHeader.btType != other.m_hHeader.btType || m_hHeader.wTotal != other.m_hHeader.wTotal || m_hHeader.wTypeLen != other.m_hHeader.wTypeLen)
         bResult = false;
     return bResult;
 }
@@ -88,11 +88,11 @@ void HDataFile::getDataFileHeader(DATAFILEHEADER *pHeader)
 void HDataFile::setDataFileHeader(DATAFILEHEADER *pHeader)
 {
     memcpy(&m_hHeader,pHeader,HEADER_SIZE);
-   // QFile file(m_szFile);
-    if(!file.isOpen())
+    /*if(!file.isOpen())
     {
         file.open(QIODevice::ReadWrite);
-    }
+    }*/
+    bool b = file.isOpen();
     file.reset();
     file.seek(0);
     file.write((char*)&m_hHeader,HEADER_SIZE);
@@ -158,7 +158,7 @@ void HDataFile::closeDataFile()
 void HDataFile::loadRecord(int wRec,char* pBuffer,int uLength)
 {
     if((int)-1 == uLength)
-        uLength = m_hHeader.wRecLength;
+        uLength = m_hHeader.wTypeLen;
 
     int wRecTemp = (0 == wRec)? m_wRec:wRec;//m_wRec就在这个地方有用
     if(wRecTemp > m_hHeader.wTotal)
@@ -168,22 +168,23 @@ void HDataFile::loadRecord(int wRec,char* pBuffer,int uLength)
     else
         m_wRec = wRec+1;
     wRec--;
-    if(!file.isOpen())
+    /*if(!file.isOpen())
     {
         file.open(QIODevice::ReadWrite);
-    }
-    int length = HEADER_SIZE + wRec * m_hHeader.wRecLength;
+    }*/
+    bool b = file.isOpen();
+    int length = HEADER_SIZE + wRec * m_hHeader.wTypeLen;
 
     file.reset();
     file.seek(length);
-    file.read(pBuffer,min(uLength,m_hHeader.wRecLength));
+    file.read(pBuffer,min(uLength,m_hHeader.wTypeLen));
 
 }
 
 void HDataFile::saveRecord(int wRec,char* pBuffer,int uLength)
 {
     if((int)-1 == uLength)
-        uLength = m_hHeader.wRecLength;
+        uLength = m_hHeader.wTypeLen;
 
 
     if(0 == wRec)
@@ -193,11 +194,12 @@ void HDataFile::saveRecord(int wRec,char* pBuffer,int uLength)
 
     //这样做的目的是上层传过来的是从1开始的，保存是从0开始的
     wRec--;
-    int length = HEADER_SIZE + wRec * m_hHeader.wRecLength;
-    if(!file.isOpen())
+    int length = HEADER_SIZE + wRec * m_hHeader.wTypeLen;
+    /*if(!file.isOpen())
     {
         file.open(QIODevice::ReadWrite);
-    }
+    }*/
+    bool b = file.isOpen();
     file.reset();
     file.seek(length);
     file.write(pBuffer,uLength);

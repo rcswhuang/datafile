@@ -15,7 +15,6 @@ public:
     static HDataFileHandle* Instance();
     static void Exinstance();
 
-    void setDataFilePath();
     int  getFileTypeSize(int nFileType);
     void getDataFilePath(int nPath,char* filename);
     bool getDataFileName(int nFileType,char* pBuffer);
