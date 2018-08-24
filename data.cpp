@@ -2,7 +2,9 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
 /*
 初始化DataFile的相关参数
 */
@@ -22,6 +24,7 @@ HDataFile::HDataFile()
     m_hHeader.wTypeLen = 0;
     m_hHeader.wReserved = 0;
     m_hHeader.wReserved1 = 0;
+
 }
 
 HDataFile::HDataFile(QString szFile)
@@ -114,6 +117,7 @@ bool HDataFile::createDataFile(QString strName)
     {
         return false;
     }
+
     return true;
 }
 
