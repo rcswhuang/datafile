@@ -2,10 +2,9 @@
 #define _DATAFILE_H_
 #include "publicdata.h"
 #include "data.h"
-//#include "publicfun.h"
 //qt 中导出函数
 
-class FILE_EXPORT HDataFileList
+class HDataFileList
 {
 public:
     HDataFileList();
@@ -14,18 +13,22 @@ public:
 public:
     void freeDataFileList();
 
+    int createDBFile(QString strFile);
+    int openDBFile(QString strFile);
+    void closeDBFile(QString strFile);
+
     int createDataFile(int nFileType,QString szFile);
     int openDataFile(int nFileType,QString szFile);
     void closeDataFile(int nFileType);
 
-    int loadDataFileHeader(QString szFile,DATAFILEHEADER* pHeader);
-    int saveDataFileHeader(QString szFile,DATAFILEHEADER* pHeader);
-    int loadDataFileRecord(QString szFile, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
-    int saveDataFileRecord(QString szFile, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
+    int loadDataFileHeader(int fd,DATAFILEHEADER* pHeader);
+    int saveDataFileHeader(int fd,DATAFILEHEADER* pHeader);
+    int loadDataFileRecord(int fd, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
+    int saveDataFileRecord(int fd, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
 
 protected:
     HDataFile* findDataFile(QString szFile);
-    HDataFile* findDataFile(int nFileType);
+    HDataFile* findDataFile(int fd);
 
 private:
     QList<HDataFile*> m_pDataFileList;

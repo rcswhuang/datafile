@@ -2,7 +2,6 @@
 #define _DATA_H_
 #include <QFile>
 #include "publicdata.h"
-//#include "publicfun.h"
 
 /*
 |   |------------------|
@@ -12,15 +11,14 @@
 |   |  StructXXXX      |
 */
 
-//文件的头结构
-//每一种类型的(遥信表、遥测表、其他数据)都有一个datafile对应
-//header应该保存这个数据文件的数据个数，及文件需要存储的数据结构长度，这样可以定位或者获取到任何一个数据)
-class FILE_EXPORT HDataFile
+/*
+ * 1.打开某类型文件，注意这类文件所有元素都存在此文件 比如厂站遥信遥测等文件，所有都存在对应文件内
+ * 2.打开某文件，注意这类文件只是存放1个实际文件，比如操作票文件，这种文件是1个操作票对应1个文件
+*/
+class HDataFile
 {
 public:
     HDataFile();
-    HDataFile(QString szFile);
-    HDataFile(const HDataFile& datafile);
     ~HDataFile();
 
 protected:
@@ -30,11 +28,7 @@ protected:
     quint16 m_wRec;//当前已经读取某种数据结构的个数
     QString m_szFile;//文件名称
     DATAFILEHEADER m_hHeader;//文件头
-    QFile file;
     FILE* m_pFP;
-public:
-   const HDataFile& operator =(const HDataFile&);
-   bool operator ==(const HDataFile& other )const;
 public:
    int getFileFD(){return m_nFileFD;}
    void setFileType(int nType){m_nFileType = nType;}

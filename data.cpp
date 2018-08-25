@@ -25,63 +25,11 @@ HDataFile::HDataFile()
     m_hHeader.wTypeLen = 0;
     m_hHeader.wReserved = 0;
     m_hHeader.wReserved1 = 0;
-
-}
-
-HDataFile::HDataFile(QString szFile)
-{
-    m_nCount = 0;//记录文件打开的次数
-    m_wRec = 1;//偏移？？
-    m_szFile = "";//文件名称
-    m_nFileType = 0;
-
-    m_hHeader.btMagic[0] = 'H';//文件头
-    m_hHeader.btMagic[1] = 'W';
-    m_hHeader.btVersion[0] = 0x01;
-    m_hHeader.btVersion[1] = 0x00;
-    m_hHeader.btType = 0;
-    m_hHeader.wTotal = 0;
-    m_hHeader.wTypeLen = 0;
-    m_hHeader.wReserved = 0;
-    m_hHeader.wReserved1 = 0;
-    m_szFile = szFile;
-}
-
-HDataFile::HDataFile(const HDataFile& df)
-{
-    m_nFileType = df.m_nFileType;
-    m_nCount = df.m_nCount;
-    m_wRec = df.m_wRec;
-    m_szFile = df.m_szFile;
-    memcpy(&m_hHeader,&df.m_hHeader,HEADER_SIZE);
 }
 
 HDataFile::~HDataFile()
 {
     closeDataFile();
-}
-
-const HDataFile& HDataFile::operator =(const HDataFile& df)
-{
-    m_nFileType = df.m_nFileType;
-    m_nCount = df.m_nCount;
-    m_wRec = df.m_wRec;
-    m_szFile = df.m_szFile;
-    memcpy(&m_hHeader,&df.m_hHeader,HEADER_SIZE);
-
-    return *this;
-}
-
-bool HDataFile::operator ==(const HDataFile& other )const
-{
-    bool bResult = true;
-    if(m_nFileType != other.m_nFileType || m_nCount != other.m_nCount ||  m_wRec != other.m_wRec || m_szFile != other.m_szFile)
-        bResult = false;
-    if(m_hHeader.btMagic[0] != other.m_hHeader.btMagic[0] || m_hHeader.btMagic[1] != other.m_hHeader.btMagic[1] ||
-    m_hHeader.btVersion[0] != other.m_hHeader.btVersion[0] || m_hHeader.btVersion[1] != other.m_hHeader.btVersion[0] ||
-    m_hHeader.btType != other.m_hHeader.btType || m_hHeader.wTotal != other.m_hHeader.wTotal || m_hHeader.wTypeLen != other.m_hHeader.wTypeLen)
-        bResult = false;
-    return bResult;
 }
 
 void HDataFile::getDataFileHeader(DATAFILEHEADER *pHeader)
@@ -92,15 +40,8 @@ void HDataFile::getDataFileHeader(DATAFILEHEADER *pHeader)
 void HDataFile::setDataFileHeader(DATAFILEHEADER *pHeader)
 {
     memcpy(&m_hHeader,pHeader,HEADER_SIZE);
-    /*if(!file.isOpen())
-    {
-        file.open(QIODevice::ReadWrite);
-    }*/
-    bool b = file.isOpen();
-    file.reset();
-    file.seek(0);
-    file.write((char*)&m_hHeader,HEADER_SIZE);
-    file.flush();
+    fseek(m_pFP,0,0);
+    fwrite(&m_hHeader,HEADER_SIZE,1,m_pFP);
 }
 
 int HDataFile::createDataFile(QString strName)
@@ -108,16 +49,6 @@ int HDataFile::createDataFile(QString strName)
     if(strName.isEmpty())
         return false;
     m_szFile = strName;
-    /*file.setFileName(m_szFile);
-    if(QFile::exists(m_szFile)) //如果文件存在 就不管了
-        return true;
-    if(!file.open(QIODevice::ReadWrite)) //否则创建文件
-        return false;
-    file.read((char*)&m_hHeader,HEADER_SIZE);
-    if('H' != m_hHeader.btMagic[0] || 'W' != m_hHeader.btMagic[1])
-    {
-        return false;
-    }*/
     char szFile[256];
     qstrcpy(szFile,strName.toLocal8Bit().data());
     m_pFP = fopen(szFile,"wb+");
@@ -134,17 +65,6 @@ int HDataFile::openDataFile(QString strName)
     if(strName.isEmpty())
         return false;
     m_szFile = strName;
-    /*file.setFileName(m_szFile);
-    if(!QFile::exists(m_szFile)) //打开文件，如果文件不存在，就false
-        return false;
-    if(!file.open(QIODevice::ReadWrite))//否则打开文件，获取header
-        return false;
-    file.read((char*)&m_hHeader,HEADER_SIZE);
-    if('H' != m_hHeader.btMagic[0] || 'W' != m_hHeader.btMagic[1])
-    {
-        return false;
-    }
-    return true;*/
     char szFile[256];
     qstrcpy(szFile,strName.toLocal8Bit().data());
     m_pFP = fopen(szFile,"wb+");
@@ -188,7 +108,7 @@ int HDataFile::loadRecord(int wRec,char* pBuffer,int uLength)
 
     int wRecTemp = (0 == wRec)? m_wRec:wRec;//m_wRec就在这个地方有用
     if(wRecTemp > m_hHeader.wTotal)
-        return;
+        return (int)-1;
     if(0 == wRec)
         wRec = m_wRec++;
     else
@@ -206,7 +126,6 @@ int HDataFile::saveRecord(int wRec,char* pBuffer,int uLength)
 {
     if((int)-1 == uLength)
         uLength = m_hHeader.wTypeLen;
-
 
     if(0 == wRec)
         wRec = m_wRec++;

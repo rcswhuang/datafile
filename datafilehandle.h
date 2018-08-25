@@ -5,19 +5,14 @@
 #include "datafile.h"
 #include <QString>
 
-class FILE_EXPORT HDataFileHandle
+class HDataFileHandle
 {
 public:
     HDataFileHandle();
-
 public:
-    static HDataFileHandle* m_pInstance;
-    static HDataFileHandle* Instance();
-    static void Exinstance();
-
     int  getFileTypeSize(int nFileType);
-    void getDataFilePath(int nPath,char* filename);
-    bool getDataFileName(int nFileType,char* pBuffer);
+    void getDataFilePath(int nPath,QString& path);
+    bool getDataFileName(int nFileType,QString& file);
 
 public:
     HDataFileList dataFileList;

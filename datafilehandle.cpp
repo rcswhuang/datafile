@@ -106,35 +106,22 @@ int getFileTypeSize(int nFileType)
 }
 
 
-HDataFileHandle* HDataFileHandle::m_pInstance = NULL;
-HDataFileHandle* HDataFileHandle::Instance()
-{
-    if(!m_pInstance)
-    {
-        m_pInstance = new HDataFileHandle;
-    }
-
-    return m_pInstance;
-}
 
 HDataFileHandle::HDataFileHandle()
 {
 }
 
-void  HDataFileHandle::getDataFilePath(int nPath,char* filename)
+void  HDataFileHandle::getDataFilePath(int nPath,QString& path)
 {
-    qstrcpy(filename,"");
+    path = "";
     if(0 <= nPath && nPath <= DFPATH_LAST)//各种文件夹路径
     {
-        qstrcpy(filename,DefaultPath[nPath].szPath);
+        path += QString(DefaultPath[nPath].szPath);
     }
 }
 
-bool HDataFileHandle::getDataFileName(int nFileType,char* pBuffer)
+bool HDataFileHandle::getDataFileName(int nFileType,QString& file)
 {
-    if(NULL == pBuffer)
-        return false;
-
     QString strFile;
     switch(nFileType)
     {
@@ -237,131 +224,118 @@ bool HDataFileHandle::getDataFileName(int nFileType,char* pBuffer)
     }
     if(strFile.isEmpty())
     {
-            *pBuffer = 0;
             return false;
     }
 
-    char szFileName[MAX_PATH];
-    getDataFilePath(DFPATH_DATA,szFileName);
-    qstrcpy(pBuffer,szFileName);//文件路径
+    QString strPath;
+    getDataFilePath(DFPATH_DATA,strPath);
     QDir dir;
-    if(!dir.exists(szFileName))
+    if(!dir.exists(strPath))
     {
-        if(!dir.mkpath(szFileName))
+        if(!dir.mkpath(strPath))
             return false;
     }
-    strcat(pBuffer,"/");
-    strcat(pBuffer,strFile.toLocal8Bit().data());
+    strPath += "/";
+    strPath += strFile;
+    file = strPath;
     return true;
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
-
+HDataFileHandle dbfileHandle;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void getDataFilePath(int nPath,char* filename)
+void getDataFilePath(int nPath,char* szPath)
 {
-    HDataFileHandle *pInstance = HDataFileHandle::Instance();
-    if(!pInstance) return;
-    pInstance->getDataFilePath(nPath,filename);
+    QString strPath;
+    dbfileHandle.getDataFilePath(nPath,strPath);
+    qstrcpy(szPath,strPath.toLocal8Bit().data());
 }
 
-bool createDB( int nFileType )
+int createDB( int nFileType )
 {
     if(nFileType > FILE_TYPE_LAST)
-        return false;
-    HDataFileHandle *pInstance = HDataFileHandle::Instance();
-    char szFile[MAX_PATH];
-    if(!pInstance->getDataFileName(nFileType,szFile))//filetype,filename
-        return false;
-    bool bOk = pInstance->dataFileList.createDataFile(nFileType,szFile);
-    if(!bOk)
-        return false;
-    return true;
+        return (int)-1;
+    QString strFile;
+    if(!dbfileHandle.getDataFileName(nFileType,strFile))//filetype,filename
+        return (int)-1;
+    int fd = dbfileHandle.dataFileList.createDataFile(nFileType,strFile);
+    return fd;
 }
 
-bool openDB( int nFileType )
+int openDB( int nFileType )
 {
     if(nFileType > FILE_TYPE_LAST)
-        return false;
-    HDataFileHandle *pInstance = HDataFileHandle::Instance();
-    char szFile[MAX_PATH];
-    if(!pInstance->getDataFileName(nFileType,szFile))
-        return false;
+        return (int)-1;
+    QString strFile;
+    if(!dbfileHandle.getDataFileName(nFileType,strFile))//filetype,filename
+        return (int)-1;
 
-    bool bOk = pInstance->dataFileList.openDataFile(nFileType,szFile);
-    if(!bOk)
-        return false;
-
+    int fd = dbfileHandle.dataFileList.openDataFile(nFileType,strFile);
+    
     DATAFILEHEADER Header;
-    pInstance->dataFileList.loadDataFileHeader(szFile,&Header);
+    dbfileHandle.dataFileList.loadDataFileHeader(fd,&Header);
     if(Header.btType != nFileType)
     {
-        pInstance->dataFileList.closeDataFile(nFileType);
-        return false;
+        dbfileHandle.dataFileList.closeDataFile(nFileType);
+        return (int)-1;
     }
-    return true;
+    return fd;
 }
 
 void closeDB( int nFileType )
 {
-     HDataFileHandle *pInstance = HDataFileHandle::Instance();
     if(nFileType < FILE_TYPE_LAST)
-        pInstance->dataFileList.closeDataFile(nFileType);
+        dbfileHandle.dataFileList.closeDataFile(nFileType);
 }
 
-bool loadDataFileHeader( int nFileType, DATAFILEHEADER* pHeader )
+int createDBFile(const char* szFile)
 {
-    if(nFileType > FILE_TYPE_LAST)
-        return false;
-     HDataFileHandle *pInstance = HDataFileHandle::Instance();
-   // DATAFILEHEADER Header;
-   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wTypeLen)
-   //     initDbRecord();
-     char szFile[MAX_PATH];
-     if(!pInstance->getDataFileName(nFileType,szFile))
-         return false;
-     return pInstance->dataFileList.loadDataFileHeader(szFile,pHeader);
+    if(szFile == NULL)
+        return (int)-1;
+    return dbfileHandle.dataFileList.createDBFile(QString(szFile));
+}
+    
+int openDBFile(const char* szFile)
+{
+    if(szFile == NULL)
+        return (int)-1;
+    return dbfileHandle.dataFileList.openDBFile(QString(szFile));
+}
+    
+void closeDBFile(const char* szFile)
+{
+    if(szFile == NULL)
+        return ;
+    return dbfileHandle.dataFileList.closeDBFile(QString(szFile));
 }
 
-bool saveDataFileHeader( int nFileType, DATAFILEHEADER* pHeader )
+int loadDataFileHeader( int fd, DATAFILEHEADER* pHeader )
 {
-    if(nFileType > FILE_TYPE_LAST)
-        return false;
-     HDataFileHandle *pInstance = HDataFileHandle::Instance();
-   // DATAFILEHEADER Header;
-   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wTypeLen)
-   //     initDbRecord();
-     char szFile[MAX_PATH];
-     if(!pInstance->getDataFileName(nFileType,szFile))
-         return false;
-     return pInstance->dataFileList.saveDataFileHeader(szFile,pHeader);
+    if(fd == (int)-1 || NULL == pHeader)
+        return (int)-1;
+
+     return dbfileHandle.dataFileList.loadDataFileHeader(fd,pHeader);
 }
 
-bool loadDBRecord( int nFileType, quint16 wRec, void* pRecord )
+int saveDataFileHeader( int fd, DATAFILEHEADER* pHeader )
 {
-    if(nFileType > FILE_TYPE_LAST)
-        return false;
-     HDataFileHandle *pInstance = HDataFileHandle::Instance();
-   // DATAFILEHEADER Header;
-   // if(loadDataFileHeader(nFileType,&Header) != -1 || wSize[uFileType] > Header.wTypeLen)
-   //     initDbRecord();
-     char szFile[MAX_PATH];
-     if(!pInstance->getDataFileName(nFileType,szFile))
-         return false;
-     int nSize = getFileTypeSize(nFileType);
-     return pInstance->dataFileList.loadDataFileRecord(szFile,wRec,(char*)pRecord,(quint32)nSize);
+    if(fd == (int)-1 || NULL == pHeader)
+        return (int)-1;
+     return dbfileHandle.dataFileList.saveDataFileHeader(fd,pHeader);
 }
 
-bool saveDBRecord( int nFileType, quint16 wRec, void* pRecord )
+int loadDBRecord( int fd, quint16 wRec, void* pRecord )
 {
-    if(nFileType > FILE_TYPE_LAST)
-        return false;
-    HDataFileHandle *pInstance = HDataFileHandle::Instance();
-    char szFile[MAX_PATH];
-    if(!pInstance->getDataFileName(nFileType,szFile))
-        return false;
-    int nSize = getFileTypeSize(nFileType);
-    return pInstance->dataFileList.saveDataFileRecord(szFile,wRec,(char*)pRecord,(quint32)nSize);
+    if(fd == (int)-1 || NULL == pRecord)
+        return (int)-1;
+     return dbfileHandle.dataFileList.loadDataFileRecord(fd,wRec,(char*)pRecord,(quint32)-1);
+}
+
+int saveDBRecord( int fd, quint16 wRec, void* pRecord )
+{
+    if(fd == (int)-1 || NULL == pRecord)
+        return (int)-1;
+    return dbfileHandle.dataFileList.saveDataFileRecord(fd,wRec,(char*)pRecord,(quint32)-1);
 }
 
 
