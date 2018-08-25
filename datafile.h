@@ -14,14 +14,14 @@ public:
 public:
     void freeDataFileList();
 
-    bool createDataFile(int nFileType,QString szFile);
-    bool openDataFile(int nFileType,QString szFile);
+    int createDataFile(int nFileType,QString szFile);
+    int openDataFile(int nFileType,QString szFile);
     void closeDataFile(int nFileType);
 
-    bool loadDataFileHeader(QString szFile,DATAFILEHEADER* pHeader);
-    bool saveDataFileHeader(QString szFile,DATAFILEHEADER* pHeader);
-    bool loadDataFileRecord(QString szFile, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
-    bool saveDataFileRecord(QString szFile, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
+    int loadDataFileHeader(QString szFile,DATAFILEHEADER* pHeader);
+    int saveDataFileHeader(QString szFile,DATAFILEHEADER* pHeader);
+    int loadDataFileRecord(QString szFile, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
+    int saveDataFileRecord(QString szFile, quint16 wRec, char* pBuffer, quint32 uLength = (quint32)-1 );
 
 protected:
     HDataFile* findDataFile(QString szFile);

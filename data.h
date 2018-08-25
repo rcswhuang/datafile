@@ -24,31 +24,34 @@ public:
     ~HDataFile();
 
 protected:
+    int m_nFileFD; //文件描述符
     int m_nFileType;//记录文件
     int m_nCount;//记录文件打开的次数
     quint16 m_wRec;//当前已经读取某种数据结构的个数
     QString m_szFile;//文件名称
     DATAFILEHEADER m_hHeader;//文件头
     QFile file;
+    FILE* m_pFP;
 public:
    const HDataFile& operator =(const HDataFile&);
    bool operator ==(const HDataFile& other )const;
 public:
-    void setFileType(int nType){m_nFileType = nType;}
-    int getFileType(){return m_nFileType;}
-    void setFileName(QString strFile){ m_szFile = strFile;}
-    QString getFileName(){return m_szFile;}
+   int getFileFD(){return m_nFileFD;}
+   void setFileType(int nType){m_nFileType = nType;}
+   int getFileType(){return m_nFileType;}
+   void setFileName(QString strFile){ m_szFile = strFile;}
+   QString getFileName(){return m_szFile;}
 
-    void getDataFileHeader(DATAFILEHEADER* pHeader);
-    void setDataFileHeader(DATAFILEHEADER* pHeader);
+   void getDataFileHeader(DATAFILEHEADER* pHeader);
+   void setDataFileHeader(DATAFILEHEADER* pHeader);
 
-    bool createDataFile(QString strFile);//创建文件
-    bool openDataFile(QString strFile);
-    void closeDataFile();
-    bool deleteDataFile(QString szFile);
+   int createDataFile(QString strFile);//创建文件
+   int openDataFile(QString strFile);
+   void closeDataFile();
+   bool deleteDataFile(QString szFile);
 
-    void loadRecord(int wRec, char* pBuffer, int wLength = (int)-1); //取一个结构
-    void saveRecord(int wRec, char* pBuffer, int wLength = (int)-1);
+   int loadRecord(int wRec, char* pBuffer, int wLength = (int)-1); //取一个结构
+   int saveRecord(int wRec, char* pBuffer, int wLength = (int)-1);
 };
 
 #endif

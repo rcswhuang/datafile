@@ -45,7 +45,7 @@ HDataFile* HDataFileList::findDataFile(QString szFile)
     return NULL;
 }
 
-bool HDataFileList::createDataFile(int nFileType,QString szFile)
+int HDataFileList::createDataFile(int nFileType,QString szFile)
 {
     HDataFile *pFile = findDataFile(szFile);
     if(pFile != NULL)
@@ -56,14 +56,14 @@ bool HDataFileList::createDataFile(int nFileType,QString szFile)
     }
     pFile = new HDataFile(szFile);
     if(NULL == pFile)
-        return false;
+        return (int)-1;
     pFile->setFileName(szFile);
     pFile->setFileType(nFileType);
-    bool bOk = pFile->createDataFile(szFile);
-    if(!bOk)
+    int fd = pFile->createDataFile(szFile);
+    if(fd == -1)
     {
         delete pFile;
-        return false;
+        return (int)-1;
     }
     DATAFILEHEADER header;
     pFile->getDataFileHeader(&header);
