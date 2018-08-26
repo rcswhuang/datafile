@@ -10,6 +10,7 @@ class HDataFileHandle
 public:
     HDataFileHandle();
 public:
+    void initDataFilePath();
     int  getFileTypeSize(int nFileType);
     void getDataFilePath(int nPath,QString& path);
     bool getDataFileName(int nFileType,QString& file);

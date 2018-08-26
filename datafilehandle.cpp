@@ -16,6 +16,7 @@ QString strDataFilePath[DFPATH_LAST + 1];
 //如果ini中没有对应的Key则取默认
 DEFAULTPATH DefaultPath[] =
 {
+    //path,id,szPath
     DFPATH_DATA,"data",
     DFPATH_GRAPH,"graph",
     DFPATH_ICON,"icon",
@@ -111,6 +112,12 @@ HDataFileHandle::HDataFileHandle()
 {
 }
 
+void HDataFileHandle::initDataFilePath()
+{
+    //1.在系统目录下面寻找，如果找不到
+    //2.在datafile.dll上层目录寻找，然后将wfconfig.ini拷贝到系统目录下
+    //3.在wfconfig.ini下面寻找对应路径，
+}
 void  HDataFileHandle::getDataFilePath(int nPath,QString& path)
 {
     path = "";
