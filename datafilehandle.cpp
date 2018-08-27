@@ -2,12 +2,14 @@
 #include "publicdata.h"
 #include "hruleeditapi.h"
 #include "hformulapi.h"
+#include "hconfigapi.h"
 #include <QCoreApplication>
 #include <QDir>
-
+#include <QFile>
 typedef struct _tagDefaultPath
 {
     ushort nFileType;
+    int id;
     char*  szPath;
 }DEFAULTPATH;
 
@@ -17,21 +19,21 @@ QString strDataFilePath[DFPATH_LAST + 1];
 DEFAULTPATH DefaultPath[] =
 {
     //path,id,szPath
-    DFPATH_DATA,"data",
-    DFPATH_GRAPH,"graph",
-    DFPATH_ICON,"icon",
-    DFPATH_BITMAP,"bitmap",
-    DFPATH_MACRO,"macro",
-    DFPATH_MEDIA,"media",
-    DFPATH_OPSHEET,"opsheet",
-    DFPATH_WORKNOTE,"worknote",
-    DFPATH_EVENT,"event",
-    DFPATH_REPORT,"report",
-    DFPATH_SIGNPAD,"signpad",
-    DFPATH_FIL,"fil",
-    DFPATH_INI,"ini",
-    DFPATH_PLUGIN,"plugin",
-    DFPATH_BIN,"bin"
+    DFPATH_DATA,SYS_PATH_DATA_SET,"data",
+    DFPATH_GRAPH,SYS_PATH_GRAPH_SET,"graph",
+    DFPATH_ICON,SYS_PATH_ICON_SET,"icon",
+    DFPATH_BITMAP,SYS_PATH_BITMAP_SET,"bitmap",
+    DFPATH_MACRO,SYS_PATH_MACRO_SET,"macro",
+    DFPATH_MEDIA,SYS_PATH_MEDIR_SET,"media",
+    DFPATH_OPSHEET,SYS_PATH_OPSHEET_SET,"opsheet",
+    DFPATH_WORKNOTE,SYS_PATH_WORKNOTE_SET,"worknote",
+    DFPATH_EVENT,SYS_PATH_EVENT_SET,"event",
+    DFPATH_REPORT,SYS_PATH_REPORT_SET,"report",
+    DFPATH_SIGNPAD,SYS_PATH_SIGNPAD_SET,"signpad",
+    DFPATH_FIL,SYS_PATH_FIL_SET,"fil",
+    DFPATH_INI,SYS_PATH_INI_SET,"ini",
+    DFPATH_PLUGIN,SYS_PATH_PLUGIN_SET,"plugin",
+    //DFPATH_BIN,"bin"
 };
 
 int nFiles[ FILE_TYPE_LAST + 1 ];
@@ -110,13 +112,36 @@ int getFileTypeSize(int nFileType)
 
 HDataFileHandle::HDataFileHandle()
 {
+    initDataFilePath();
 }
 
 void HDataFileHandle::initDataFilePath()
 {
     //1.在系统目录下面寻找，如果找不到
-    //2.在datafile.dll上层目录寻找，然后将wfconfig.ini拷贝到系统目录下
-    //3.在wfconfig.ini下面寻找对应路径，
+    QString strConfigXml = "";
+    char szConfigXml[256];
+#ifdef WIN32
+    strConfigXml = "c:/windows/system32/wfconfig.xml";
+    qstrcpy(szConfigXml,"c:/windows/system32/wfconfig.xml");
+#elif
+    strConfigXml = "/usr/etc/wfconfig.xml";
+    qstrcpy(szConfigXml,"/usr/etc/wfconfig.xml");
+#endif
+    if(!QFile::exists(strConfigXml))
+    {
+        QString strPath = QCoreApplication::applicationDirPath();
+        strPath = strPath.left(strPath.lastIndexOf("/"));
+        strConfigXml = strPath + "/" + "wfconfig.xml";
+        qstrcpy(szConfigXml,strConfigXml.toLocal8Bit().data());
+    }
+    initSysConfig(szConfigXml);
+    QVariant var;
+    for(int i = 0; i < sizeof(DefaultPath)/sizeof(DEFAULTPATH);i++)
+    {
+        getSettingValue(SYS_SET_PATH,i,var);
+        QString path = var.toString() + "/" + DefaultPath[i].szPath;
+        qstrcpy(DefaultPath[i].szPath,path.toLocal8Bit().data());
+    }
 }
 void  HDataFileHandle::getDataFilePath(int nPath,QString& path)
 {

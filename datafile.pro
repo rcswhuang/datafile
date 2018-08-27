@@ -34,16 +34,11 @@ SOURCES +=\
 	
 FORMS	+= \
 
-
+LIBS += -L../lib -lH5ConfigHelp
 unix{
-    UI_DIR = .ui
-    MOC_DIR = .moc
-    OBJECTS_DIR	= .obj
-
-    DEFINES += \
-
-    LIBPATH +=	\
-
+    UI_DIR = temp/ui
+    MOC_DIR = tem/moc
+    OBJECTS_DIR	= temp/obj
     LIBS += \
 		
 }	  
@@ -52,8 +47,6 @@ win32{
     UI_DIR = temp/ui
     MOC_DIR = temp/moc
     OBJECTS_DIR	= temp/obj
-
-    DEFINES += \
     LIBS += \
 } 
 
