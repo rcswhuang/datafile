@@ -23,7 +23,7 @@ DEFAULTPATH DefaultPath[] =
     DFPATH_GRAPH,SYS_PATH_GRAPH_SET,"graph",
     DFPATH_ICON,SYS_PATH_ICON_SET,"icon",
     DFPATH_BITMAP,SYS_PATH_BITMAP_SET,"bitmap",
-    DFPATH_MACRO,SYS_PATH_MACRO_SET,"macro",
+    //DFPATH_MACRO,SYS_PATH_MACRO_SET,"macro",
     DFPATH_MEDIA,SYS_PATH_MEDIR_SET,"media",
     DFPATH_OPSHEET,SYS_PATH_OPSHEET_SET,"opsheet",
     DFPATH_WORKNOTE,SYS_PATH_WORKNOTE_SET,"worknote",
@@ -108,8 +108,6 @@ int getFileTypeSize(int nFileType)
     return nSize;
 }
 
-
-
 HDataFileHandle::HDataFileHandle()
 {
     initDataFilePath();
@@ -122,17 +120,19 @@ void HDataFileHandle::initDataFilePath()
     char szConfigXml[256];
 #ifdef WIN32
     strConfigXml = "c:/windows/system32/wfconfig.xml";
-    qstrcpy(szConfigXml,"c:/windows/system32/wfconfig.xml");
-#elif
+    //qstrcpy(szConfigXml,"c:/windows/system32/wfconfig.xml");
+#else
     strConfigXml = "/usr/etc/wfconfig.xml";
-    qstrcpy(szConfigXml,"/usr/etc/wfconfig.xml");
+    //qstrcpy(szConfigXml,"/usr/etc/wfconfig.xml");
 #endif
     if(!QFile::exists(strConfigXml))
     {
         QString strPath = QCoreApplication::applicationDirPath();
         strPath = strPath.left(strPath.lastIndexOf("/"));
-        strConfigXml = strPath + "/" + "wfconfig.xml";
-        qstrcpy(szConfigXml,strConfigXml.toLocal8Bit().data());
+        QString strLocalConfigXml = strPath + "/" + "wfconfig.xml";
+        QFile file(strLocalConfigXml);
+        file.setPermissions(QFileDevice::ReadGroup|QFileDevice::WriteGroup);
+        QFile::copy(strLocalConfigXml,strConfigXml);
     }
     initSysConfig(szConfigXml);
     QVariant var;
