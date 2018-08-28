@@ -19,20 +19,20 @@ QString strDataFilePath[DFPATH_LAST + 1];
 DEFAULTPATH DefaultPath[] =
 {
     //path,id,szPath
-    DFPATH_DATA,SYS_PATH_DATA_SET,"data",
-    DFPATH_GRAPH,SYS_PATH_GRAPH_SET,"graph",
-    DFPATH_ICON,SYS_PATH_ICON_SET,"icon",
-    DFPATH_BITMAP,SYS_PATH_BITMAP_SET,"bitmap",
+    {DFPATH_DATA,SYS_PATH_DATA_SET,"data"},
+    {DFPATH_GRAPH,SYS_PATH_GRAPH_SET,"graph"},
+    {DFPATH_ICON,SYS_PATH_ICON_SET,"icon"},
+    {DFPATH_BITMAP,SYS_PATH_BITMAP_SET,"bitmap"},
     //DFPATH_MACRO,SYS_PATH_MACRO_SET,"macro",
-    DFPATH_MEDIA,SYS_PATH_MEDIR_SET,"media",
-    DFPATH_OPSHEET,SYS_PATH_OPSHEET_SET,"opsheet",
-    DFPATH_WORKNOTE,SYS_PATH_WORKNOTE_SET,"worknote",
-    DFPATH_EVENT,SYS_PATH_EVENT_SET,"event",
-    DFPATH_REPORT,SYS_PATH_REPORT_SET,"report",
-    DFPATH_SIGNPAD,SYS_PATH_SIGNPAD_SET,"signpad",
-    DFPATH_FIL,SYS_PATH_FIL_SET,"fil",
-    DFPATH_INI,SYS_PATH_INI_SET,"ini",
-    DFPATH_PLUGIN,SYS_PATH_PLUGIN_SET,"plugin",
+    {DFPATH_MEDIA,SYS_PATH_MEDIR_SET,"media"},
+    {DFPATH_OPSHEET,SYS_PATH_OPSHEET_SET,"opsheet"},
+    {DFPATH_WORKNOTE,SYS_PATH_WORKNOTE_SET,"worknote"},
+    {DFPATH_EVENT,SYS_PATH_EVENT_SET,"event"},
+    {DFPATH_REPORT,SYS_PATH_REPORT_SET,"report"},
+    {DFPATH_SIGNPAD,SYS_PATH_SIGNPAD_SET,"signpad"},
+    {DFPATH_FIL,SYS_PATH_FIL_SET,"fil"},
+    {DFPATH_INI,SYS_PATH_INI_SET,"ini"},
+    {DFPATH_PLUGIN,SYS_PATH_PLUGIN_SET,"plugin"}
     //DFPATH_BIN,"bin"
 };
 
@@ -101,7 +101,7 @@ int getFileTypeSize(int nFileType)
     {
         nSize = sizeof(OPSHEETINFO);
     }
-    else if(nFileType == FILE_TYPE_OPSHEETHEAD)
+    else if(nFileType == FILE_TYPE_OPSHEET)
     {
         nSize = sizeof(OPSHEETSTEP);
     }
@@ -115,26 +115,7 @@ HDataFileHandle::HDataFileHandle()
 
 void HDataFileHandle::initDataFilePath()
 {
-    //1.在系统目录下面寻找，如果找不到
-    QString strConfigXml = "";
-    char szConfigXml[256];
-#ifdef WIN32
-    strConfigXml = "c:/windows/system32/wfconfig.xml";
-    //qstrcpy(szConfigXml,"c:/windows/system32/wfconfig.xml");
-#else
-    strConfigXml = "/usr/etc/wfconfig.xml";
-    //qstrcpy(szConfigXml,"/usr/etc/wfconfig.xml");
-#endif
-    if(!QFile::exists(strConfigXml))
-    {
-        QString strPath = QCoreApplication::applicationDirPath();
-        strPath = strPath.left(strPath.lastIndexOf("/"));
-        QString strLocalConfigXml = strPath + "/" + "wfconfig.xml";
-        QFile file(strLocalConfigXml);
-        file.setPermissions(QFileDevice::ReadGroup|QFileDevice::WriteGroup);
-        QFile::copy(strLocalConfigXml,strConfigXml);
-    }
-    initSysConfig(szConfigXml);
+    initSysConfig();
     QVariant var;
     for(int i = 0; i < sizeof(DefaultPath)/sizeof(DEFAULTPATH);i++)
     {
@@ -184,7 +165,7 @@ bool HDataFileHandle::getDataFileName(int nFileType,QString& file)
         case FILE_TYPE_RULE:
                 strFile = "wfrule.dat";
                 break;
-        case FILE_TYPE_OPSHEETHEAD:
+        case FILE_TYPE_OPSHEET:
                 strFile = "wfopsheethead.dat";
                 break;
         case FILE_TYPE_RELAY:
