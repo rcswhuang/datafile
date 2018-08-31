@@ -10,7 +10,7 @@ typedef struct _tagDefaultPath
 {
     ushort nFileType;
     int id;
-    char*  szPath;
+    std::string  szPath;
 }DEFAULTPATH;
 
 QString strDataFilePath[DFPATH_LAST + 1];
@@ -117,11 +117,12 @@ void HDataFileHandle::initDataFilePath()
 {
     initSysConfig();
     QVariant var;
+    int nPath = SYS_SET_PATH;
     for(int i = 0; i < sizeof(DefaultPath)/sizeof(DEFAULTPATH);i++)
     {
-        getSettingValue(SYS_SET_PATH,i,var);
-        QString path = var.toString() + "/" + DefaultPath[i].szPath;
-        qstrcpy(DefaultPath[i].szPath,path.toLocal8Bit().data());
+        getSettingValue(nPath,i,var);
+        QString path = var.toString() + "/" + QString::fromStdString(DefaultPath[i].szPath);
+        DefaultPath[i].szPath = path.toStdString();
     }
 }
 void  HDataFileHandle::getDataFilePath(int nPath,QString& path)
@@ -129,7 +130,7 @@ void  HDataFileHandle::getDataFilePath(int nPath,QString& path)
     path = "";
     if(0 <= nPath && nPath <= DFPATH_LAST)//各种文件夹路径
     {
-        path += QString(DefaultPath[nPath].szPath);
+        path += QString::fromStdString(DefaultPath[nPath].szPath);
     }
 }
 
