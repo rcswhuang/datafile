@@ -15,7 +15,7 @@ public:
 
     int createDBFile(QString strFile);
     int openDBFile(QString strFile);
-    void closeDBFile(QString strFile);
+    void closeDBFile(int fd);// fd
 
     int createDataFile(int nFileType,QString szFile);
     int openDataFile(int nFileType,QString szFile);
@@ -29,6 +29,7 @@ public:
 protected:
     HDataFile* findDataFile(QString szFile);
     HDataFile* findDataFile(int fd);
+    HDataFile* findDataFileByType(int nFileType);
 
 private:
     QList<HDataFile*> m_pDataFileList;

@@ -67,7 +67,7 @@ int HDataFile::openDataFile(QString strName)
     m_szFile = strName;
     char szFile[256];
     qstrcpy(szFile,strName.toLocal8Bit().data());
-    m_pFP = fopen(szFile,"wb+");
+    m_pFP = fopen(szFile,"rb+");
     if(m_pFP == NULL)
         return (int)-1;
     m_nFileFD = fileno(m_pFP);

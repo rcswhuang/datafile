@@ -33,13 +33,26 @@ HDataFile* HDataFileList::findDataFile(int fd)
     return NULL;
 }
 
-HDataFile* HDataFileList::findDataFile(QString szFile)
+HDataFile* HDataFileList::findDataFile(QString strFile)
 {
     HDataFile *pFile = NULL;
     for(int i = 0; i < m_pDataFileList.count();i++)
     {
         pFile = (HDataFile*)m_pDataFileList[i];
-        if(pFile->getFileName() == szFile)
+        if(pFile->getFileName() == strFile)
+            return pFile;
+    }
+    return NULL;
+}
+
+
+HDataFile* HDataFileList::findDataFileByType(int nFileType)
+{
+    HDataFile *pFile = NULL;
+    for(int i = 0; i < m_pDataFileList.count();i++)
+    {
+        pFile = (HDataFile*)m_pDataFileList[i];
+        if(pFile->getFileType() == nFileType)
             return pFile;
     }
     return NULL;
@@ -89,14 +102,15 @@ int HDataFileList::openDBFile(QString strFile)
     return fd;
 }
 
-void HDataFileList::closeDBFile(QString strFile)
+void HDataFileList::closeDBFile(int fd)
 {
-    HDataFile *pFile = findDataFile(strFile);
+    HDataFile *pFile = findDataFile(fd);
     if(pFile == NULL)
     {
         return;
     }
     pFile->closeDataFile();
+    m_pDataFileList.removeOne(pFile);
 }
 
 int HDataFileList::createDataFile(int nFileType,QString strFile)
@@ -159,12 +173,13 @@ int HDataFileList::openDataFile(int nFileType,QString szFile)
 
 void HDataFileList::closeDataFile(int nFileType)
 {
-    HDataFile *pFile = findDataFile(nFileType);
+    HDataFile *pFile = findDataFileByType(nFileType);
     if(pFile == NULL)
     {
         return;
     }
     pFile->closeDataFile();
+    m_pDataFileList.removeOne(pFile);
 
 }
 

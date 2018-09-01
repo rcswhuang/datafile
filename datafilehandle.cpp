@@ -18,7 +18,7 @@ QString strDataFilePath[DFPATH_LAST + 1];
 //如果ini中没有对应的Key则取默认
 DEFAULTPATH DefaultPath[] =
 {
-    //path,id,szPath
+    //type,id,szPath
     {DFPATH_DATA,SYS_PATH_DATA_SET,"data"},
     {DFPATH_GRAPH,SYS_PATH_GRAPH_SET,"graph"},
     {DFPATH_ICON,SYS_PATH_ICON_SET,"icon"},
@@ -120,17 +120,17 @@ void HDataFileHandle::initDataFilePath()
     int nPath = SYS_SET_PATH;
     for(int i = 0; i < sizeof(DefaultPath)/sizeof(DEFAULTPATH);i++)
     {
-        getSettingValue(nPath,i,var);
-        QString path = var.toString() + "/" + QString::fromStdString(DefaultPath[i].szPath);
+        getSettingValue(nPath,DefaultPath[i].id,var);
+        QString path = var.toString() ;//+ "/" + QString::fromStdString(DefaultPath[i].szPath);
         DefaultPath[i].szPath = path.toStdString();
     }
 }
 void  HDataFileHandle::getDataFilePath(int nPath,QString& path)
 {
-    path = "";
-    if(0 <= nPath && nPath <= DFPATH_LAST)//各种文件夹路径
+    for(int i = 0; i < sizeof(DefaultPath)/sizeof(DEFAULTPATH);i++)
     {
-        path += QString::fromStdString(DefaultPath[nPath].szPath);
+        if(nPath == DefaultPath[i].nFileType)
+            path = QString::fromStdString(DefaultPath[i].szPath);
     }
 }
 
@@ -249,7 +249,7 @@ bool HDataFileHandle::getDataFileName(int nFileType,QString& file)
         if(!dir.mkpath(strPath))
             return false;
     }
-    strPath += "/";
+    //strPath += "/";
     strPath += strFile;
     file = strPath;
     return true;
@@ -320,7 +320,8 @@ void closeDBFile(const char* szFile)
 {
     if(szFile == NULL)
         return ;
-    return dbfileHandle.dataFileList.closeDBFile(QString(szFile));
+    //return dbfileHandle.dataFileList.closeDBFile(QString(szFile));
+    return;
 }
 
 int loadDataFileHeader( int fd, DATAFILEHEADER* pHeader )
