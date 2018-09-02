@@ -203,6 +203,27 @@ int HDataFileList::saveDataFileHeader(int fd,DATAFILEHEADER* pHeader)
     return 0;
 }
 
+int HDataFileList::loadDbRecord(int nFileType, quint16 wRec, char * pBuffer, quint32 uLength )
+{
+    HDataFile *pFile = NULL;
+    pFile = findDataFileByType(nFileType);
+    //根据类型可以把pBuffer初始化一下
+    if(!pFile)
+        return (int)-1;
+    DATAFILEHEADER dbHeader;
+    pFile->getDataFileHeader(&dbHeader);
+    return pFile->loadRecord(wRec,pBuffer,uLength);
+}
+
+int HDataFileList::saveDbRecord(int nFileType, quint16 wRec, char * pBuffer, quint32 uLength )
+{
+    HDataFile *pFile = NULL;
+    pFile = findDataFileByType(nFileType);
+    if(!pFile)
+        return (int)-1;
+    return pFile->saveRecord(wRec,pBuffer,uLength);
+}
+
 int HDataFileList::loadDataFileRecord(int fd, quint16 wRec, char * pBuffer, quint32 uLength )
 {
     HDataFile *pFile = NULL;

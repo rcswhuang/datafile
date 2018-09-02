@@ -316,11 +316,11 @@ int openDBFile(const char* szFile)
     return dbfileHandle.dataFileList.openDBFile(QString(szFile));
 }
     
-void closeDBFile(const char* szFile)
+void closeDBFile(int fd)
 {
-    if(szFile == NULL)
+    if(fd == (int)-1)
         return ;
-    //return dbfileHandle.dataFileList.closeDBFile(QString(szFile));
+    return dbfileHandle.dataFileList.closeDBFile(fd);
     return;
 }
 
@@ -339,18 +339,32 @@ int saveDataFileHeader( int fd, DATAFILEHEADER* pHeader )
      return dbfileHandle.dataFileList.saveDataFileHeader(fd,pHeader);
 }
 
-int loadDBRecord( int fd, quint16 wRec, void* pRecord )
+int loadDataFileRecord( int fd, quint16 wRec, void* pRecord )
 {
     if(fd == (int)-1 || NULL == pRecord)
         return (int)-1;
      return dbfileHandle.dataFileList.loadDataFileRecord(fd,wRec,(char*)pRecord,(quint32)-1);
 }
 
-int saveDBRecord( int fd, quint16 wRec, void* pRecord )
+int loadDBRecord( int nFileType, quint16 wRec, void* pRecord )
+{
+    if(NULL == pRecord)
+        return (int)-1;
+     return dbfileHandle.dataFileList.loadDbRecord(nFileType,wRec,(char*)pRecord,(quint32)-1);
+}
+
+int saveDataFileRecord( int fd, quint16 wRec, void* pRecord )
 {
     if(fd == (int)-1 || NULL == pRecord)
         return (int)-1;
     return dbfileHandle.dataFileList.saveDataFileRecord(fd,wRec,(char*)pRecord,(quint32)-1);
+}
+
+int saveDBRecord( int nFileType, quint16 wRec, void* pRecord )
+{
+    if(NULL == pRecord)
+        return (int)-1;
+    return dbfileHandle.dataFileList.saveDbRecord(nFileType,wRec,(char*)pRecord,(quint32)-1);
 }
 
 
