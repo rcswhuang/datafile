@@ -37,7 +37,7 @@ FORMS	+= \
 LIBS += -L../lib -lH5ConfigHelp
 unix{
     UI_DIR = temp/ui
-    MOC_DIR = tem/moc
+    MOC_DIR = temp/moc
     OBJECTS_DIR	= temp/obj
     LIBS += \
 		
