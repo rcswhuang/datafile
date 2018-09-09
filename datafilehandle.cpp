@@ -208,9 +208,9 @@ bool HDataFileHandle::getDataFileName(int nFileType,QString& file)
         case FILE_TYPE_ITEM:
                 strFile = "wfitem.dat";
                 break;
-        case FILE_TYPE_GRAPHDB:
-                strFile = "graph.dat";
-                break;
+        //case FILE_TYPE_GRAPHDB:
+        //        strFile = "graph.dat";
+        //        break;
         case FILE_TYPE_STATECHANGEINFO:
                 strFile = "wfstatechangeinfo.dat";
                 break;
