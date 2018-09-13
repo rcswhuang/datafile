@@ -85,7 +85,9 @@ int HDataFileList::openDBFile(QString strFile)
     HDataFile *pFile = findDataFile(strFile);
     if(pFile != NULL)
     {
-        return pFile->getFileFD();
+        pFile->openDataFile(strFile);
+        int fd = pFile->openDataFile(strFile);
+        return fd;
     }
 
     pFile = new HDataFile;
