@@ -1,7 +1,7 @@
 ﻿#ifndef _DATA_H_
 #define _DATA_H_
 #include <QFile>
-#include "publicdata.h"
+#include "hfileapi.h"
 
 /*
 |   |------------------|

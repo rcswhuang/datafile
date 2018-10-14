@@ -1,5 +1,4 @@
 ﻿#include "datafilehandle.h"
-#include "publicdata.h"
 #include "hruleeditapi.h"
 #include "hformulapi.h"
 #include "hconfigapi.h"

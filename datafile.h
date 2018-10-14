@@ -1,6 +1,5 @@
 ﻿#ifndef _DATAFILE_H_
 #define _DATAFILE_H_
-#include "publicdata.h"
 #include "data.h"
 //qt 中导出函数
 

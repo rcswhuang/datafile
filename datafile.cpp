@@ -1,5 +1,4 @@
-﻿#include "publicdata.h"
-#include "datafilehandle.h"
+﻿#include "datafilehandle.h"
 #include "data.h"
 #include "datafile.h"
 #include <QCoreApplication>
