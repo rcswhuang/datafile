@@ -104,6 +104,10 @@ int getFileTypeSize(int nFileType)
     {
         nSize = sizeof(OPSHEETSTEP);
     }
+    else if(nFileType == FILE_TYPE_REPORT)
+    {
+        nSize = sizeof(GRIDPREPORT);
+    }
     return nSize;
 }
 
